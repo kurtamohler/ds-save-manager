@@ -6,8 +6,16 @@ import distutils.dir_util
 import datetime
 import warnings
 
-game_dir = os.path.join(os.environ["HOME"], ".steam/steam/steamapps/compatdata/570940/pfx/drive_c/users/steamuser/My Documents/NBGI/DARK SOULS REMASTERED")
-saves_dir = os.path.join(os.environ["HOME"], "Documents/ds1_backups")
+def get_env_var_path(var_name, default_path_from_home):
+    path = os.environ.get(var_name)
+    if path is None:
+        home_dir = os.environ.get("HOME")
+        if home_dir is not None:
+            path = os.path.join(home_dir, default_path_from_home)
+    return path
+
+game_dir = get_env_var_path("DS_GAME_DIR", ".steam/steam/steamapps/compatdata/570940/pfx/drive_c/users/steamuser/My Documents/NBGI/DARK SOULS REMASTERED")
+saves_dir = get_env_var_path("DS_SAVES_DIR", "Documents/ds1_backups")
 
 def get_saves():
     return os.listdir(saves_dir)
@@ -53,6 +61,8 @@ if __name__ == "__main__":
     parser.add_argument('--save', action='store_true')
     parser.add_argument('--label', type=str)
     parser.add_argument('--load', type=str)
+    parser.add_argument('--game-dir', type=str)
+    parser.add_argument('--saves-dir', type=str)
     args = parser.parse_args()
     if args.load and args.save:
         raise RuntimeError("Cannot load and save")
@@ -60,6 +70,11 @@ if __name__ == "__main__":
         raise RuntimeError("Cannot load and list")
     if args.save and args.list:
         raise RuntimeError("Cannot save and list")
+
+    if args.game_dir:
+        game_dir = args.game_dir
+    if args.saves_dir:
+        saves_dir = args.saves_dir
 
     if args.list:
         if args.label:
